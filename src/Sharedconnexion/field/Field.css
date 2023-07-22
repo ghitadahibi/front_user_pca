@@ -1,7 +1,7 @@
 .input-email {
     margin-left: 20px;
     padding: 10px 15px;
-    border: 1px solid #ccc;
+    border: 1px solid #fff;
     border-radius: 5px;
     text-decoration: none;
     color: #333;
@@ -11,11 +11,13 @@
   
   .input-email::placeholder {
     color: #999; /* ajout de la couleur pour le placeholder */
+    font-weight: bold;
+    font-size: 14px;
   }
   .input-pwd {
     margin-left: 20px;
     padding: 10px 15px;
-    border: 1px solid #ccc;
+    border: 1px solid #fff;
     border-radius: 5px;
     text-decoration: none;
     color: #333;
@@ -25,4 +27,6 @@
   
   .input-pwd::placeholder {
     color: #999; /* ajout de la couleur pour le placeholder */
+    font-weight: bold;
+    font-size: 14px;
   }
