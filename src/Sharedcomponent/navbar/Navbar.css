@@ -1,0 +1,26 @@
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f2f2f2;
+  height: 80px;
+  padding: 0 30px;
+}
+
+.logo a img {
+  height: 50px;
+  width: auto;
+}
+
+.account a {
+  margin-left: 20px;
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-decoration: none;
+  color: #333;
+}
+
+.account a:hover {
+  background-color: #ccc;
+}

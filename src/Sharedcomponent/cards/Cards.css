@@ -1,0 +1,73 @@
+.jobs-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.job-card {
+  background-color:#f2f2f2;
+  border-radius: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  width: 300px;
+  margin: 20px;
+  padding: 20px;
+  transition: all 0.3s;
+  height: 235px;
+ ;
+
+}
+
+/*.job-card:hover {
+  transform: translateY(-3px);
+}*/
+
+.company-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.company-info img {
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.company-info h3 {
+  font-size: 20px;
+  margin: 0;
+}
+
+.apply-button {
+  background-color: #fff;
+  border: 2px solid #ddae7f ;
+  border-radius: 20px;
+  color: #666;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 10px 20px;
+}
+
+.apply-button:hover {
+  background-color: #660d2f50;
+  color: #fff;
+}
+.text{
+  color:#e18121;
+}
+.text2{
+  color:#838080;
+}
+.modal-container {
+  position: fixed; /* positionnement fixe pour rester au centre */
+  top: 50%; /* position verticale à 50% de la hauteur de la page */
+  left: 50%; /* position horizontale à 50% de la largeur de la page */
+  transform: translate(-50%, -50%); /* centrez le modal en utilisant la moitié de sa taille */
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  padding: 20px;
+  z-index: 999;
+}

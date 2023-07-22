@@ -1,0 +1,13 @@
+.image-slider img {
+  width: 100%;
+  height: 80vh;
+  object-fit: cover;
+  position: absolute;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+.image-slider img.active {
+  position: relative;
+  opacity: 1;
+}
