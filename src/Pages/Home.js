@@ -1,5 +1,6 @@
 import Navbar from "../Sharedcomponent/navbar/Navbar.js";
 import Jobs from "../Sharedcomponent/container/Jobs.js"
+import Cards from "../Sharedcomponent/cards/Cards.js"
 
 
 const Home = () => {
@@ -7,7 +8,7 @@ const Home = () => {
     <div>
       <Navbar></Navbar>
       <Jobs></Jobs>
-      
+      <Cards></Cards>
 
     </div>
   )
