@@ -1,0 +1,28 @@
+.input-email {
+    margin-left: 20px;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #333;
+    margin-top: 20px;
+    width: 300px; /* ajout de la largeur */
+  }
+  
+  .input-email::placeholder {
+    color: #999; /* ajout de la couleur pour le placeholder */
+  }
+  .input-pwd {
+    margin-left: 20px;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-decoration: none;
+    color: #333;
+    margin-top: 20px;
+    width: 300px; /* ajout de la largeur */
+  }
+  
+  .input-pwd::placeholder {
+    color: #999; /* ajout de la couleur pour le placeholder */
+  }
