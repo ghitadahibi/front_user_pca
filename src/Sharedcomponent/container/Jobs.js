@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import '../container/Jobs.css';
 import bcp from "../../assets/bcp.jpg"
-<<<<<<< HEAD
 import bcp12 from "../../assets/bcp12.jpeg"
 import bcp13 from "../../assets/bcp13.jpg"
-=======
-import bcp6 from "../../assets/bcp6.jpg"
-import BCP4 from "../../assets/BCP4.jpg"
->>>>>>> 594fe357ba8866633917396a9a8b359ec7dfecf1
+
 
 const Jobs = () => {
   const [currentImage, setCurrentImage] = useState(0);
