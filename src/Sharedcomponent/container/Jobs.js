@@ -24,13 +24,11 @@ const Jobs = () => {
     <div>
       <div className="image-slider">
         <img src={bcp} alt="Image 1" className={currentImage === 0 ? "active" : ""} />
-<<<<<<< HEAD
+
         <img src={bcp12} alt="Image 2" className={currentImage === 1 ? "active" : ""} />
         <img src={bcp13} alt="Image 3" className={currentImage === 2 ? "active" : ""} />
-=======
-        <img src={bcp6} alt="Image 2" className={currentImage === 1 ? "active" : ""} />
-        <img src={BCP4} alt="Image 3" className={currentImage === 2 ? "active" : ""} />
->>>>>>> 594fe357ba8866633917396a9a8b359ec7dfecf1
+
+
       </div>
     </div>
   );
