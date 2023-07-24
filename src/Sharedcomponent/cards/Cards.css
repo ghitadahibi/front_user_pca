@@ -140,3 +140,29 @@
 .modal-content button:hover {
   background-color: #ff7f00;
 }
+
+/* Media queries pour les écrans plus petits */
+@media screen and (max-width: 768px) {
+  .carousel-container {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .carousel-card {
+    min-width: 250px;
+    max-width: 250px;
+    margin: 0 10px 20px;
+  }
+
+  .carousel-buttons {
+    position: static;
+    margin-top: 20px;
+    width: auto;
+    padding: 0;
+  }
+
+  .carousel-prev-btn,
+  .carousel-next-btn {
+    font-size: 30px;
+  }
+}
