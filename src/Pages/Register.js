@@ -1,9 +1,14 @@
 import React from 'react'
-import Compte from '../../src/Sharedcompte/compte/Compte'
+import Field_c from '../../src/Sharedcompte/field/Field_c'
+import Inputs from '../Sharedcompte/inputs/inputs'
+import Signup  from '../../src/Sharedcompte/Signup/Signup'
+
 const Register = () => {
   return (
     <div>
-      <Compte></Compte>
+      <Signup></Signup>
+      <Inputs></Inputs>
+      <Field_c></Field_c>
     </div>
   )
 }
