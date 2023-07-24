@@ -11,8 +11,8 @@
   }
   
   .image-container img {
-    width: 120%;
-    height: auto;
+    width: 250%;
+    height: 70%;
     max-width: 2000px; /* Définir une largeur maximale pour l'image */
     object-fit: cover;
   }
