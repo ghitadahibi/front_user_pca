@@ -1,7 +1,7 @@
 import Navbar from "../Sharedcomponent/navbar/Navbar.js";
 import Jobs from "../Sharedcomponent/container/Jobs.js"
 import Cards from "../Sharedcomponent/cards/Cards.js"
-import Val from "../Sharedval/val/Val.js"
+import Val from "../Sharedcomponent/val/Val.js"
 
 
 const Home = () => {
