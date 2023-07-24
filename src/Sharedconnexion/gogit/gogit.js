@@ -1,6 +1,6 @@
 
 import React from "react";
-import "../../Sharedconnexion/gogit/gogit.css";
+import "../gogit/Gogit.css";
 import google from "../../assets/google.png";
 import git from "../../assets/git.png";
 const Gogit = () => {

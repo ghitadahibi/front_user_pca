@@ -1,6 +1,6 @@
 import React from 'react';
 import './Val.css';
-import Image from '../../assets/val2.jpg';
+import Image from '../../assets/private-lounge.jpg'
 
 
 const Val = () => {
