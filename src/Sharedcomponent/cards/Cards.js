@@ -50,13 +50,48 @@ function Carousel() {
 
   const [showModal, setShowModal] = useState(false);
 
-  const handleApplyClick = () => {
+  const handleApplyClick = async () => {
     setShowModal(true);
   }
+
+  const handleModalSubmit = async (event) => {
+    event.preventDefault();
+  
+    // Récupérer les valeurs du formulaire
+    const job_name = document.getElementById('job_name').value;
+    const cv = document.getElementById('cv').files[0];
+  
+    // Créer un objet FormData pour envoyer les données de formulaire et les fichiers
+    const formData = new FormData();
+    formData.append('job_name', job_name);
+    formData.append('cv', cv);
+  
+    try {
+      const response = await fetch('http://localhost:10081/api/example/calculate-similarity', {
+        method: 'POST',
+        body: formData
+      });
+  
+      if (!response.ok) {
+        throw new Error('Une erreur est survenue lors de l\'appel à l\'API REST');
+      }
+  
+      const responseBody = await response.text();
+      console.log('Réponse de l\'API REST :', responseBody);
+    } catch (error) {
+      console.error(error);
+    }
+  
+    setShowModal(false);
+  }
+
+  // Bind the handleModalSubmit function to the form submission event
+  //document.getElementById('form').addEventListener('submit', handleModalSubmit);
 
   const handleCloseModal = () => {
     setShowModal(false);
   }
+
 
   return (
     <div className="carousel">
@@ -88,18 +123,20 @@ function Carousel() {
           <div className="modal-content">
             <span className="close" onClick={handleCloseModal}>&times;</span>
             
-            <form>
+            <form  onSubmit={handleModalSubmit}>
               <label htmlFor="firstName">Prénom:</label>
-              <input type="text" id="firstName" name="firstName" required />
+             <input type="text" id="firstName" name="firstName" required />
               <label htmlFor="lastName">Nom:</label>
               <input type="text" id="lastName" name="lastName" required />
               <label htmlFor="email">E-mail:</label>
               <input type="email" id="email" name="email" required />
+              <label htmlFor="job_name">job_name:</label>
+              <input type="text" id="job_name" name="job_name" required />
               <label htmlFor="cv">CV:</label>
               <input type="file" id="cv" name="cv" accept=".pdf,.doc,.docx" required />
               <button type="submit">Envoyer</button>
-              *veuillez remplir les champs correctement
             </form>
+            <p>*veuillez remplir les champs correctement</p>
           </div>
         </div>
       )}
