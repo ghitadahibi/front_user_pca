@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect,  useRef  } from 'react';
+import { Button, Modal,notification } from 'antd';
+
 import './Cards.css';
 
 function Carousel() {
@@ -40,6 +42,7 @@ function Carousel() {
       </div>
     );
   };
+
   const handleViewClick = (card) => {
     setViewedJobOffer(card);
   };
@@ -61,7 +64,7 @@ function Carousel() {
       prevActiveCardGroup === 0 ? cardGroups.length - 1 : prevActiveCardGroup - 1
     );
   };
-  
+
   const handleNextClick = () => {
     setActiveCardGroup((prevActiveCardGroup) =>
       prevActiveCardGroup === cardGroups.length - 1 ? 0 : prevActiveCardGroup + 1
@@ -69,109 +72,130 @@ function Carousel() {
   };
 
   const [showModal, setShowModal] = useState(false);
-
-  const handleApplyClick = async () => {
+  const [jobTitle, setJobTitle] = useState(null);
+  const handleApplyClick = (jobTitle) => {
+    setJobTitle(jobTitle);
     setShowModal(true);
-  }
+  };
 
-  const handleModalSubmit = async (event) => {
-    event.preventDefault();
+  const toast = useRef(null);
 
-    // Récupérer les valeurs du formulaire
-    const job_name = document.getElementById('job_name').value;
-    const cv = document.getElementById('cv').files[0];
+ 
 
-    // Créer un objet FormData pour envoyer les données de formulaire et les fichiers
-    const formData = new FormData();
-    formData.append('job_name', job_name);
-    formData.append('cv', cv);
 
-    try {
-      const response = await fetch('http://localhost:10081/api/example/calculate-similarity', {
-        method: 'POST',
-        body: formData
-      });
 
-      if (!response.ok) {
-        throw new Error('Une erreur est survenue lors de l\'appel à l\'API REST');
-      }
+const handleModalSubmit = async (event) => {
+  event.preventDefault();
 
-      const responseBody = await response.text();
-      console.log('Réponse de l\'API REST :', responseBody);
-    } catch (error) {
-      console.error(error);
+  // Récupérer les valeurs du formulaire
+  const job_name = jobTitle;
+  const cv = document.getElementById('cv').files[0];
+
+  // Créer un objet FormData pour envoyer les données de formulaire et les fichiers
+  const formData = new FormData();
+  formData.append('job_name', job_name);
+  formData.append('cv', cv);
+   // Close modal
+   setShowModal(false);
+
+   // Display success message
+   notification.success({
+     message: 'Succès',
+     description: 'Le formulaire a été soumis avec succès',
+   });
+
+  try {
+    const response = await fetch('http://localhost:10081/api/example/calculate-similarity', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Une erreur est survenue lors de l'appel à l'API REST");
     }
 
-    setShowModal(false);
-  }
+    const responseBody = await response.text();
+    console.log('Réponse de l\'API REST:', responseBody);
 
-  // Bind the handleModalSubmit function to the form submission event
-  //document.getElementById('form').addEventListener('submit', handleModalSubmit);
+   
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   const handleCloseModal = () => {
     setShowModal(false);
-  }
-
+  };
 
   return (
     <div className="carousel">
-      
+     
       <div className="carousel-container">
-      {cardGroups[activeCardGroup]?.map((card, index) => (
-  <div key={index} className="carousel-card">
-    <h2>{card.jobTitle}</h2>
-    {renderJobDescription(card)}
-    <button className="apply-btn" onClick={handleApplyClick}>Postuler maintenant</button>
-  </div>
-))}
-
-
+        {cardGroups[activeCardGroup]?.map((card, index) => (
+          <div key={index} className="carousel-card">
+            <h2>{card.jobTitle}</h2>
+            {renderJobDescription(card)}
+            <button className="apply-btn" onClick={() => handleApplyClick(card.jobTitle)}>
+              Postuler maintenant
+            </button>
+          </div>
+        ))}
       </div>
       <div className="carousel-buttons">
-        <button
-          className="carousel-prev-btn"
-          onClick={handlePrevClick}
-        >
+        <button className="carousel-prev-btn" onClick={handlePrevClick}>
           &#8249;
         </button>
-        <button
-          className="carousel-next-btn"
-          onClick={handleNextClick}
-        >
+        <button className="carousel-next-btn" onClick={handleNextClick}>
           &#8250;
         </button>
       </div>
-      {showModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <span className="close" onClick={handleCloseModal}>&times;</span>
+      <Modal
+  title="Postuler"
+  visible={showModal}
+  onCancel={handleCloseModal}
+  footer={[
+    <Button key="cancel" className='annuler' onClick={handleCloseModal}>
+      Annuler
+    </Button>,
 
-            <form onSubmit={handleModalSubmit}>
-              <label htmlFor="firstName">Prénom:</label>
-              <input type="text" id="firstName" name="firstName" required />
-              <label htmlFor="lastName">Nom:</label>
-              <input type="text" id="lastName" name="lastName" required />
-              <label htmlFor="email">E-mail:</label>
-              <input type="email" id="email" name="email" required />
-              <label htmlFor="job_name">job_name:</label>
-              <input type="text" id="job_name" name="job_name" required />
-              <label htmlFor="cv">CV:</label>
-              <input type="file" id="cv" name="cv" accept=".pdf,.doc,.docx" required />
-              <button type="submit">Envoyer</button>
-            </form>
-            <p>*veuillez remplir les champs correctement</p>
+    <Button key="postuler" className='orange' onClick={handleModalSubmit}  >
+      
+
+      Postuler
+    </Button>,
+  ]}
+>
+        <form >
+          <div className="form-group">
+            <label htmlFor="firstName">Prénom:</label>
+            <input type="text" id="firstName" name="firstName" required placeholder="Prénom" className="form-input" />
           </div>
-        </div>
+          <div className="form-group">
+            <label htmlFor="lastName">Nom:</label>
+            <input type="text" id="lastName" name="lastName" required placeholder="Nom" className="form-input" />
+          </div>
+          <div className="form-group">
+            <label htmlFor="email">E-mail:</label>
+            <input type="email" id="email" name="email" required placeholder="E-mail" className="form-input" />
+          </div>
+          <div className="form-group">
+            <label htmlFor="cv">Choisir un CV:</label>
+            <input type="file" id="cv" accept=".pdf,.doc,.docx" required className="form-input" />
+          </div>
+
+        </form>
+      </Modal>
+      {viewedJobOffer && (
+        <Modal
+          title={viewedJobOffer.jobTitle}
+          visible={true}
+          onCancel={() => setViewedJobOffer(null)}
+          footer={null}
+        >
+          <p>{viewedJobOffer.jobDescription}</p>
+        </Modal>
       )}
-       {viewedJobOffer && (
-      <div className="glass-container">
-        <h2>{viewedJobOffer.jobTitle}</h2>
-        <p>{viewedJobOffer.jobDescription}</p>
-        <button className="fermer" onClick={() => setViewedJobOffer(null)}>Fermer</button>
-      </div>
-    )}
     </div>
-    
   );
 }
 
