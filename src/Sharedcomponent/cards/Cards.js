@@ -8,23 +8,79 @@ function Carousel() {
   const [cardGroups, setCardGroups] = useState([]);
   const [expandedCards, setExpandedCards] = useState(new Set());
   const [viewedJobOffer, setViewedJobOffer] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [jobTitle, setJobTitle] = useState(null);
+  const [accessTokens, setAccessTokens] = useState([]);
+  const [accessToken, setAccessToken] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  const authenticate = async () => {
+    try {
+      const params = new URLSearchParams();
+      params.append('grant_type', 'client_credentials');
+      params.append('client_id', 'front-user');
+      params.append('client_secret', 'J5RDSc7Doy3MEnOqCxZylP9TsLgBoYQ8');
+  
+      const response = await fetch('http://localhost:8080/realms/srs/protocol/openid-connect/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params,
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Erreur lors de l'authentification avec Keycloak: ${response.statusText}`);
+      }
+  
+      const data = await response.json();
+      return data.access_token;
+    } catch (error) {
+      console.error('Erreur lors de l\'authentification avec Keycloak:', error);
+    }
+  };
+  
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch('http://localhost:10081/api/example/joboffer');
-      const data = await response.json();
-      const transformedData = data.map((jobOffer) => ({
-        jobTitle: jobOffer.jobOfferName,
-        jobDescription: jobOffer.content,
-      }));
-      const cardGroups = [];
-      for (let i = 0; i < transformedData.length; i += 3) {
-        cardGroups.push(transformedData.slice(i, i + 3));
+      try {
+        const token = await authenticate(); // Get the access token from the authenticate function
+        setAccessTokens(prevAccessTokens => [...prevAccessTokens, token]);
+        const response = await fetch(`http://localhost:10081/api/example/joboffer`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Use the access token in the fetch request
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Erreur lors de la récupération des données: ${response.statusText}`);
+        }
+  
+        const data = await response.json();
+        const transformedData = data.map((jobOffer) => ({
+          jobTitle: jobOffer.jobOfferName,
+          jobDescription: jobOffer.content,
+        }));
+        const cardGroups = [];
+        for (let i = 0; i < transformedData.length; i += 3) {
+          cardGroups.push(transformedData.slice(i, i + 3));
+        }
+        setCardGroups(cardGroups);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des données:', error);
       }
-      setCardGroups(cardGroups);
     };
+  
     fetchData();
   }, []);
+  
+  useEffect(() => {
+    if (accessTokens.length > 0) {
+      console.log(accessTokens[0]);
+    }
+  }, [accessTokens]);
+  
+  
+  // render job description
 
   const renderJobDescription = (card) => {
     const maxLines = 4;
@@ -42,48 +98,33 @@ function Carousel() {
       </div>
     );
   };
-
+// viewjoboffer
   const handleViewClick = (card) => {
     setViewedJobOffer(card);
   };
 
-  const handleExpandClick = (cardTitle) => {
-    setExpandedCards((prevExpandedCards) => {
-      const newExpandedCards = new Set(prevExpandedCards);
-      if (newExpandedCards.has(cardTitle)) {
-        newExpandedCards.delete(cardTitle);
-      } else {
-        newExpandedCards.add(cardTitle);
-      }
-      return newExpandedCards;
-    });
-  };
-
+  
+//prevclick
   const handlePrevClick = () => {
     setActiveCardGroup((prevActiveCardGroup) =>
       prevActiveCardGroup === 0 ? cardGroups.length - 1 : prevActiveCardGroup - 1
     );
   };
-
+//nextclick
   const handleNextClick = () => {
     setActiveCardGroup((prevActiveCardGroup) =>
       prevActiveCardGroup === cardGroups.length - 1 ? 0 : prevActiveCardGroup + 1
     );
   };
 
-  const [showModal, setShowModal] = useState(false);
-  const [jobTitle, setJobTitle] = useState(null);
+//applyclick
   const handleApplyClick = (jobTitle) => {
     setJobTitle(jobTitle);
     setShowModal(true);
   };
 
-  const toast = useRef(null);
 
- 
-
-
-
+// modalsubmit calculate similariryscore
 const handleModalSubmit = async (event) => {
   event.preventDefault();
 
@@ -127,6 +168,9 @@ const handleModalSubmit = async (event) => {
     setShowModal(false);
   };
 
+
+
+//return
   return (
     <div className="carousel">
      
@@ -157,10 +201,7 @@ const handleModalSubmit = async (event) => {
     <Button key="cancel" className='annuler' onClick={handleCloseModal}>
       Annuler
     </Button>,
-
     <Button key="postuler" className='orange' onClick={handleModalSubmit}  >
-      
-
       Postuler
     </Button>,
   ]}
