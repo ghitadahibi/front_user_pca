@@ -1,6 +1,6 @@
 import React, { useState, useEffect,  useRef  } from 'react';
 import { Button, Modal,notification } from 'antd';
-
+import queryString from 'query-string';
 import './Cards.css';
 
 function Carousel() {
@@ -11,8 +11,100 @@ function Carousel() {
   const [showModal, setShowModal] = useState(false);
   const [jobTitle, setJobTitle] = useState(null);
   const [accessTokens, setAccessTokens] = useState([]);
-  const [accessToken, setAccessToken] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [Tokens, setTokens] = useState([]);
+ 
+  //////////////////////login+postuler////////////////////////////////////
+  useEffect(() => {
+    const params = queryString.parse(window.location.search);
+    const code = params.code;
+    //console.log(code);
+    if (code) {
+      exchangeCodeForToken(code);
+    
+    }
+  }, []);
+ 
+
+  const exchangeCodeForToken = async (code) => {
+    try {
+      const response = await fetch('http://localhost:8080/realms/srs/protocol/openid-connect/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: queryString.stringify({
+          grant_type: 'authorization_code',
+          client_id: 'front-user',
+          client_secret:'J5RDSc7Doy3MEnOqCxZylP9TsLgBoYQ8',
+          code: code,
+          redirect_uri: 'http://localhost:3001/', // Replace with your redirect URL
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error exchanging code for token: ${response.statusText}`);
+      }
+  
+      const data = await response.json();
+      const Token = data.access_token;
+      setTokens(prevAccessTokens => [...prevAccessTokens, Token]);
+    } catch (error) {
+      console.error('Error exchanging code for token:', error);
+    }
+  };
+  
+  useEffect(() => {
+    if (Tokens.length > 0) {
+      console.log(Tokens[0]);
+    }
+  }, [Tokens]);
+
+  const handleModalSubmit = async (event) => {
+    event.preventDefault();
+  
+    // Récupérer les valeurs du formulaire
+    const job_name = jobTitle;
+    const cv = document.getElementById('cv').files[0];
+  
+    // Créer un objet FormData pour envoyer les données de formulaire et les fichiers
+    const formData = new FormData();
+    formData.append('job_name', job_name);
+    formData.append('cv', cv);
+     // Close modal
+     setShowModal(false);
+  
+     // Display success message
+     notification.success({
+       message: 'Succès',
+       description: 'Le formulaire a été soumis avec succès',
+     });
+  
+    try {
+      const response = await fetch('http://localhost:10081/api/example/calculate-similarity', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Tokens[0]}`,
+        },
+        body: formData,
+      });
+  
+      if (!response.ok) {
+        throw new Error("Une erreur est survenue lors de l'appel à l'API REST");
+      }
+  
+      const responseBody = await response.text();
+      console.log('Réponse de l\'API REST:', responseBody);
+  
+     
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  const handleLogout = () => {
+    setTokens([]);
+  };
+
+  //////////////////////////frontendauthentification//////////////////////////////////
 
   const authenticate = async () => {
     try {
@@ -118,51 +210,26 @@ function Carousel() {
   };
 
 //applyclick
-  const handleApplyClick = (jobTitle) => {
+const handleApplyClick = (jobTitle) => {
+  // Check if the code parameter is present in the URL
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+
+  if (!Tokens[0] && !code) {
+    // If the user is not authenticated and the code parameter is not present in the URL, redirect them to the Keycloak login page
+    window.location.href = 'http://localhost:8080/realms/srs/protocol/openid-connect/auth?client_id=front-user&response_type=code';
+  } else {
     setJobTitle(jobTitle);
     setShowModal(true);
-  };
+  }
+};
+
+
+
 
 
 // modalsubmit calculate similariryscore
-const handleModalSubmit = async (event) => {
-  event.preventDefault();
 
-  // Récupérer les valeurs du formulaire
-  const job_name = jobTitle;
-  const cv = document.getElementById('cv').files[0];
-
-  // Créer un objet FormData pour envoyer les données de formulaire et les fichiers
-  const formData = new FormData();
-  formData.append('job_name', job_name);
-  formData.append('cv', cv);
-   // Close modal
-   setShowModal(false);
-
-   // Display success message
-   notification.success({
-     message: 'Succès',
-     description: 'Le formulaire a été soumis avec succès',
-   });
-
-  try {
-    const response = await fetch('http://localhost:10081/api/example/calculate-similarity', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error("Une erreur est survenue lors de l'appel à l'API REST");
-    }
-
-    const responseBody = await response.text();
-    console.log('Réponse de l\'API REST:', responseBody);
-
-   
-  } catch (error) {
-    console.error(error);
-  }
-};
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -240,4 +307,4 @@ const handleModalSubmit = async (event) => {
   );
 }
 
-export default Carousel;
+export default Carousel
