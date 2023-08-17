@@ -1,175 +1,111 @@
 import React, { useState, useEffect,  useRef  } from 'react';
 import { Button, Modal,notification } from 'antd';
-import queryString from 'query-string';
+import { Authenticate } from '../../Auth';
 import './Cards.css';
+import { store } from '../..';
+import { Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons'
 
-function Carousel() {
+
+const Cards = () => {
+//les usestates
   const [activeCardGroup, setActiveCardGroup] = useState(0);
   const [cardGroups, setCardGroups] = useState([]);
   const [expandedCards, setExpandedCards] = useState(new Set());
   const [viewedJobOffer, setViewedJobOffer] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [jobTitle, setJobTitle] = useState(null);
-  const [accessTokens, setAccessTokens] = useState([]);
-  const [Tokens, setTokens] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const antIcon = <LoadingOutlined style={{ fontSize: 24, color: '#ff7f00' }} spin />;
+  
+
+  
+  
+  const state = store.getState();
+  const userTokens = state.userTokens;
+  console.log('userToken'+userTokens)
  
-  //////////////////////login+postuler////////////////////////////////////
-  useEffect(() => {
-    const params = queryString.parse(window.location.search);
-    const code = params.code;
-    //console.log(code);
-    if (code) {
-      exchangeCodeForToken(code);
-    
-    }
-  }, []);
  
 
-  const exchangeCodeForToken = async (code) => {
-    try {
-      const response = await fetch('http://localhost:8080/realms/srs/protocol/openid-connect/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: queryString.stringify({
-          grant_type: 'authorization_code',
-          client_id: 'front-user',
-          client_secret:'J5RDSc7Doy3MEnOqCxZylP9TsLgBoYQ8',
-          code: code,
-          redirect_uri: 'http://localhost:3001/', // Replace with your redirect URL
-        }),
+//Postuler
+const handleModalSubmit = async (event) => {
+  event.preventDefault();
+  const job_name = jobTitle;
+  const cv = document.getElementById('cv').files[0];
+  const formData = new FormData();
+  formData.append('job_name', job_name);
+  formData.append('cv', cv);
+  setShowModal(false);
+  setLoading(true);
+
+  try {
+    const response = await fetch('http://localhost:10081/api/example/calculate-similarity', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${userTokens}`, // Utiliser le token dans l'en-tête d'autorisation
+      },
+      body: formData,
+    });
+
+    setLoading(false);
+
+    if (!response.ok) {
+      notification.error({
+        message: 'Échec',
+        description: 'Échec de la soumission vous ne disposez pas su role',
       });
-  
+      throw new Error("Une erreur est survenue lors de l'appel à l'API REST");
+    }
+
+    notification.success({
+      message: 'Succès',
+      description: 'Le formulaire a été soumis avec succès',
+    });
+
+    const responseBody = await response.text();
+    console.log('Réponse de l\'API REST:', responseBody);
+  } catch (error) {
+    setLoading(false);
+    console.error(error);
+  }
+};
+
+
+
+
+//affichage des cards avec joboffer
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+       
+       const adminTokens=await Authenticate();
+       const response = await fetch(`http://localhost:10081/api/example/joboffer`, {
+        headers: {
+          Authorization: `Bearer ${adminTokens}`, // Use the access token in the fetch request
+        },
+      });
+
       if (!response.ok) {
-        throw new Error(`Error exchanging code for token: ${response.statusText}`);
+        throw new Error(`Erreur lors de la récupération des données: ${response.statusText}`);
       }
-  
+
       const data = await response.json();
-      const Token = data.access_token;
-      setTokens(prevAccessTokens => [...prevAccessTokens, Token]);
-    } catch (error) {
-      console.error('Error exchanging code for token:', error);
-    }
-  };
-  
-  useEffect(() => {
-    if (Tokens.length > 0) {
-      console.log(Tokens[0]);
-    }
-  }, [Tokens]);
-
-  const handleModalSubmit = async (event) => {
-    event.preventDefault();
-  
-    // Récupérer les valeurs du formulaire
-    const job_name = jobTitle;
-    const cv = document.getElementById('cv').files[0];
-  
-    // Créer un objet FormData pour envoyer les données de formulaire et les fichiers
-    const formData = new FormData();
-    formData.append('job_name', job_name);
-    formData.append('cv', cv);
-     // Close modal
-     setShowModal(false);
-  
-     // Display success message
-     notification.success({
-       message: 'Succès',
-       description: 'Le formulaire a été soumis avec succès',
-     });
-  
-    try {
-      const response = await fetch('http://localhost:10081/api/example/calculate-similarity', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Tokens[0]}`,
-        },
-        body: formData,
-      });
-  
-      if (!response.ok) {
-        throw new Error("Une erreur est survenue lors de l'appel à l'API REST");
+      const transformedData = data.map((jobOffer) => ({
+        jobTitle: jobOffer.jobOfferName,
+        jobDescription: jobOffer.content,
+      }));
+      const cardGroups = [];
+      for (let i = 0; i < transformedData.length; i += 3) {
+        cardGroups.push(transformedData.slice(i, i + 3));
       }
-  
-      const responseBody = await response.text();
-      console.log('Réponse de l\'API REST:', responseBody);
-  
-     
+      setCardGroups(cardGroups);
     } catch (error) {
-      console.error(error);
+      console.error('Erreur lors de la récupération des données:', error);
     }
-  };
-  const handleLogout = () => {
-    setTokens([]);
   };
 
-  //////////////////////////frontendauthentification//////////////////////////////////
-
-  const authenticate = async () => {
-    try {
-      const params = new URLSearchParams();
-      params.append('grant_type', 'client_credentials');
-      params.append('client_id', 'front-user');
-      params.append('client_secret', 'J5RDSc7Doy3MEnOqCxZylP9TsLgBoYQ8');
-  
-      const response = await fetch('http://localhost:8080/realms/srs/protocol/openid-connect/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: params,
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Erreur lors de l'authentification avec Keycloak: ${response.statusText}`);
-      }
-  
-      const data = await response.json();
-      return data.access_token;
-    } catch (error) {
-      console.error('Erreur lors de l\'authentification avec Keycloak:', error);
-    }
-  };
-  
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = await authenticate(); // Get the access token from the authenticate function
-        setAccessTokens(prevAccessTokens => [...prevAccessTokens, token]);
-        const response = await fetch(`http://localhost:10081/api/example/joboffer`, {
-          headers: {
-            Authorization: `Bearer ${token}`, // Use the access token in the fetch request
-          },
-        });
-  
-        if (!response.ok) {
-          throw new Error(`Erreur lors de la récupération des données: ${response.statusText}`);
-        }
-  
-        const data = await response.json();
-        const transformedData = data.map((jobOffer) => ({
-          jobTitle: jobOffer.jobOfferName,
-          jobDescription: jobOffer.content,
-        }));
-        const cardGroups = [];
-        for (let i = 0; i < transformedData.length; i += 3) {
-          cardGroups.push(transformedData.slice(i, i + 3));
-        }
-        setCardGroups(cardGroups);
-      } catch (error) {
-        console.error('Erreur lors de la récupération des données:', error);
-      }
-    };
-  
-    fetchData();
-  }, []);
-  
-  useEffect(() => {
-    if (accessTokens.length > 0) {
-      console.log(accessTokens[0]);
-    }
-  }, [accessTokens]);
+  fetchData();
+}, []);
   
   
   // render job description
@@ -215,7 +151,7 @@ const handleApplyClick = (jobTitle) => {
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
 
-  if (!Tokens[0] && !code) {
+  if ( !code) {
     // If the user is not authenticated and the code parameter is not present in the URL, redirect them to the Keycloak login page
     window.location.href = 'http://localhost:8080/realms/srs/protocol/openid-connect/auth?client_id=front-user&response_type=code';
   } else {
@@ -223,9 +159,6 @@ const handleApplyClick = (jobTitle) => {
     setShowModal(true);
   }
 };
-
-
-
 
 
 // modalsubmit calculate similariryscore
@@ -239,8 +172,14 @@ const handleApplyClick = (jobTitle) => {
 
 //return
   return (
+    
     <div className="carousel">
-     
+      {loading && (
+      <div>
+        <Spin indicator={antIcon} />
+        <span>Votre demande est en cours de traitement</span>
+      </div>
+    )}
       <div className="carousel-container">
         {cardGroups[activeCardGroup]?.map((card, index) => (
           <div key={index} className="carousel-card">
@@ -258,7 +197,7 @@ const handleApplyClick = (jobTitle) => {
         </button>
         <button className="carousel-next-btn" onClick={handleNextClick}>
           &#8250;
-        </button>
+        </button> 
       </div>
       <Modal
   title="Postuler"
@@ -307,4 +246,4 @@ const handleApplyClick = (jobTitle) => {
   );
 }
 
-export default Carousel
+export default Cards;
