@@ -25,11 +25,14 @@ const refreshToken = urlParams.get('refresh_token');
   useEffect(() => {
     if (code) {
       exchangeCodeForToken(code)
-        .then((token) => {
+        .then(({ token, refreshToken }) => {
           if (token) {
             store.dispatch(addUserToken(token));
             console.log('Le token est présent dans le store:', token);
             console.log('userTokens:', store.getState().userTokens);
+  
+            // Store the refresh token for future use
+      
           }
         })
         .catch((error) => {
@@ -39,11 +42,12 @@ const refreshToken = urlParams.get('refresh_token');
     } else if (refreshToken) {
       // use the refresh token to get a new access token
       refreshAccessToken(refreshToken)
-        .then((token) => {
+        .then(({ token}) => {
           if (token) {
             store.dispatch(addUserToken(token));
-            console.log('Le token est présent dans le store:', token);
-            console.log('userTokens:', store.getState().userTokens);
+            console.log('le refresh:', token);
+            console.log('userTokensrefresh:', store.getState().userTokens);
+
           }
         })
         .catch((error) => {
@@ -52,6 +56,7 @@ const refreshToken = urlParams.get('refresh_token');
         });
     }
   }, [dispatch, refreshToken]);
+  
 
   const handleLogout = () => {
     dispatch(clearUserTokens());

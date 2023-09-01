@@ -22,54 +22,58 @@ const Cards = () => {
   
   
   const state = store.getState();
-  const userTokens = state.userTokens;
+  let userTokens = state.userTokens;
   console.log('userToken'+userTokens)
- 
- 
-
-//Postuler
-const handleModalSubmit = async (event) => {
-  event.preventDefault();
-  const job_name = jobTitle;
-  const cv = document.getElementById('cv').files[0];
-  const formData = new FormData();
-  formData.append('job_name', job_name);
-  formData.append('cv', cv);
-  setShowModal(false);
-  setLoading(true);
-
-  try {
-    const response = await fetch('http://localhost:10081/api/example/calculate-similarity', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${userTokens}`, // Utiliser le token dans l'en-tête d'autorisation
-      },
-      body: formData,
-    });
-
-    setLoading(false);
-
-    if (!response.ok) {
-      notification.error({
-        message: 'Échec',
-        description: 'Échec de la soumission vous ne disposez pas su role',
+  
+  //Postuler
+  const handleModalSubmit = async (event) => {
+    event.preventDefault();
+    const job_name = jobTitle;
+    const cv = document.getElementById('cv').files[0];
+    const formData = new FormData();
+    formData.append('job_name', job_name);
+    formData.append('cv', cv);
+    setShowModal(false);
+    setLoading(true);
+  
+    try {
+      const response = await fetch('http://localhost:10081/api/example/calculate-similarity', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${userTokens[0]}`, // Utiliser le token dans l'en-tête d'autorisation
+        },
+        body: formData,
       });
-      throw new Error("Une erreur est survenue lors de l'appel à l'API REST");
+  
+      setLoading(false);
+  
+      if (!response.ok) {
+        notification.error({
+          message: 'Échec',
+          description: 'Échec de la soumission vous ne disposez pas su role',
+        });
+        throw new Error("Une erreur est survenue lors de l'appel à l'API REST");
+      }
+  
+      notification.success({
+        message: 'Succès',
+        description: 'Le formulaire a été soumis avec succès',
+      });
+  
+      const responseBody = await response.text();
+      console.log('Réponse de l\'API REST:', responseBody);
+    } catch (error) {
+      setLoading(false);
+      console.error(error);
+      
+      // Use the next token if the first one is expired
+      userTokens.shift();
+      if (userTokens.length > 0) {
+        handleModalSubmit(event);
+      }
     }
-
-    notification.success({
-      message: 'Succès',
-      description: 'Le formulaire a été soumis avec succès',
-    });
-
-    const responseBody = await response.text();
-    console.log('Réponse de l\'API REST:', responseBody);
-  } catch (error) {
-    setLoading(false);
-    console.error(error);
-  }
-};
-
+  };
+  
 
 
 
